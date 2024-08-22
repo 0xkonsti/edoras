@@ -3,6 +3,8 @@ resolver = "2"
 
 members = [
 	"crates/edoras_server",
+	"crates/edoras_core",
+	"crates/edoras_client",
 	"crates/hello", 
 ]
 
