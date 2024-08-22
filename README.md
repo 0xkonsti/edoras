@@ -6,7 +6,7 @@ EDORAS is a simple Chatserver/-client application written in rust. !For now this
 
 ## TODOs
 
-- [ ] Implement a simple TCP server/client with a Ping-Pong mechanism
+- [x] Implement a simple TCP server/client with a Ping-Pong mechanism
 - [ ] Implement a basic Userlogin (no authentification yet) with Usernames
   - [ ] Implement a simple Userlist with online users
 - [ ] Implement direct messaging between 2 users
