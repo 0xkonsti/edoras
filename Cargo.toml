@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+
+members = [
+	"crates/hello",
+]
+
+[workspace.dependencies]
+# anyhow = "1.0.*"
+# futures = "0.3.*"
+# tracing = "0.1.*"
+# tracing-subscriber = "0.3.*"
+
+[workspace.dependencies.async-std]
+version = "1.12.*"
+features = ["attributes"]
+
