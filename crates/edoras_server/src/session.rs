@@ -1,18 +1,44 @@
 use async_std::net::TcpStream;
 use edoras_core::{Message, MessageError};
+use uuid::Uuid;
 
+#[derive(Debug)]
 pub(crate) struct Session {
+    id: Uuid,
     stream: TcpStream,
-
     closed: bool,
+
+    user: Option<String>,
 }
 
 impl Session {
     pub fn new(stream: TcpStream) -> Self {
         Self {
+            id: Uuid::new_v4(),
             stream,
             closed: false,
+
+            user: None,
         }
+    }
+
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
+    pub fn user(&self) -> Option<&String> {
+        self.user.as_ref()
+    }
+
+    pub fn set_user(&mut self, user: String) {
+        if self.user.is_some() {
+            return;
+        }
+        self.user = Some(user);
+    }
+
+    pub fn remove_user(&mut self) {
+        self.user = None;
     }
 
     pub fn peer_addr(&self) -> std::io::Result<std::net::SocketAddr> {
@@ -32,6 +58,7 @@ impl Session {
     }
 
     pub async fn recieved_msg(&mut self) -> bool {
+        tracing::debug!("Checking for message");
         Message::peek_for_header(&mut self.stream).await
     }
 

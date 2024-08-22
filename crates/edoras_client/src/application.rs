@@ -52,6 +52,13 @@ impl App {
         tracing::debug!("Application started");
 
         MessageBuilder::new()
+            .with_type(MessageType::Register)
+            .with_field("luffy")
+            .build()
+            .send(self.data.stream_mut().unwrap())
+            .await?;
+
+        MessageBuilder::new()
             .with_type(MessageType::Disconnect)
             .build()
             .send(self.data.stream_mut().unwrap())

@@ -9,7 +9,7 @@ const HEADER_SIZE: usize = 4;
 const MESSAGE_TYPE_SIZE: usize = size_of::<MessageTypeCode>();
 const BASE_LENGTH_SIZE: usize = size_of::<BaseLength>();
 
-pub const HEADER: [u8; HEADER_SIZE] = [0x23, 0x3c, 0x21, 0x3e]; // #<!>
+pub const HEADER: [u8; HEADER_SIZE] = [0x1, 0x3c, 0x21, 0x3e];
 
 const EMPTY: MessageTypeCode = 0x00;
 const PING: MessageTypeCode = 0x3c; // >
@@ -17,7 +17,10 @@ const PONG: MessageTypeCode = 0x3e; // <
 const OKAY: MessageTypeCode = 0x6; // ACK
 const ERROR: MessageTypeCode = 0x3f; // ?
 const DISCONNECT: MessageTypeCode = 0x1b; // ESC
-                                          //
+
+const LOGIN: MessageTypeCode = 0x2a; // *
+const REGISTER: MessageTypeCode = 0x2b; // +
+
 #[derive(Debug, Clone, Copy)]
 pub enum MessageType {
     // General
@@ -27,6 +30,10 @@ pub enum MessageType {
     Okay,
     Error,
     Disconnect,
+
+    // Auth
+    Login,
+    Register,
 }
 
 #[derive(Debug, Clone)]
@@ -64,6 +71,8 @@ impl MessageType {
             OKAY => Self::Okay,
             ERROR => Self::Error,
             DISCONNECT => Self::Disconnect,
+            LOGIN => Self::Login,
+            REGISTER => Self::Register,
             _ => panic!("Unknown message type code: {}", code),
         }
     }
@@ -76,6 +85,8 @@ impl MessageType {
             Self::Okay => OKAY,
             Self::Error => ERROR,
             Self::Disconnect => DISCONNECT,
+            Self::Login => LOGIN,
+            Self::Register => REGISTER,
         }
     }
 }
@@ -117,6 +128,10 @@ impl Default for MessageBody {
 impl Message {
     pub fn mtype(&self) -> MessageType {
         self.mtype
+    }
+
+    pub fn field_count(&self) -> BaseLength {
+        self.body.count
     }
 
     pub fn data(&self) -> Vec<Vec<u8>> {
@@ -257,8 +272,8 @@ impl MessageBuilder {
         self
     }
 
-    pub fn with_field(mut self, data: Vec<u8>) -> Self {
-        self.body.add_field(MessageField::new(data));
+    pub fn with_field(mut self, data: impl Into<Vec<u8>>) -> Self {
+        self.body.add_field(MessageField::new(data.into()));
         self
     }
 

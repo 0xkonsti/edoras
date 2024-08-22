@@ -1,7 +1,16 @@
-use crate::session::Session;
-use edoras_core::{Message, MessageBuilder, MessageType};
+mod auth;
 
-pub async fn handle_message(session: &mut Session, message: &Message) {
+use crate::application::AppData;
+use crate::session::Session;
+use async_std::sync::RwLock;
+use edoras_core::{Message, MessageBuilder, MessageType};
+use std::sync::Arc;
+
+pub async fn handle_message(
+    session: &mut Session,
+    appdata: Arc<RwLock<AppData>>,
+    message: &Message,
+) {
     match message.mtype() {
         MessageType::Ping => {
             session
@@ -10,7 +19,20 @@ pub async fn handle_message(session: &mut Session, message: &Message) {
                 .unwrap();
         }
         MessageType::Disconnect => {
+            appdata.write().await.remove_session(&session.id());
+            appdata
+                .write()
+                .await
+                .get_user_mut(session.user().as_ref().unwrap())
+                .unwrap()
+                .clear_session();
             session.close();
+        }
+        MessageType::Login => {
+            auth::handle_login(session, appdata, message).await;
+        }
+        MessageType::Register => {
+            auth::handle_register(session, appdata, message).await;
         }
         _ => {}
     }

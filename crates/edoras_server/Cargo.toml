@@ -12,6 +12,7 @@ anyhow.workspace = true
 futures.workspace = true
 tracing = "0.1.*"
 tracing-subscriber = "0.3.*"
+uuid = { version = "1.10.*", features = ["v4"] }
 
 [dependencies.async-std]
 workspace = true
