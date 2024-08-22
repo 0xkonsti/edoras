@@ -26,6 +26,8 @@ pub(crate) async fn handle_register(
         Err(_) => return,
     };
 
+    // TODO: validate username with pattern [a-zA-Z0-9_]{3,20}
+
     tracing::info!("Registering user {}", username);
 
     if appdata.read().await.get_user(username).is_some() {

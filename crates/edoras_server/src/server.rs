@@ -59,7 +59,6 @@ impl Server {
         tracing::info!("New connection from {}", addr);
 
         while !session.read().await.closed() {
-            // TODO: Check if the client is still connected > send ping to client on an interval
             if !session.write().await.recieved_msg().await {
                 continue;
             }
