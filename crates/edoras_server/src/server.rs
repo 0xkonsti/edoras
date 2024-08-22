@@ -1,10 +1,11 @@
-use crate::application::{AppData, CONNECTION_LIMIT};
+use crate::application::{AppData, CONNECTION_LIMIT, HEALTH_CHECK_INTERVAL};
 use crate::handlers::handle_message;
 use crate::session::Session;
 use anyhow::Result as AnyResult;
 use async_std::net::TcpListener;
 use async_std::sync::RwLock;
 use async_std::task;
+use edoras_core::Message;
 use futures::StreamExt;
 use std::sync::Arc;
 
@@ -32,10 +33,9 @@ impl Server {
                 let data = Arc::clone(&appdata);
                 async move {
                     if let Ok(stream) = stream {
-                        task::spawn(Self::handle_connection(
-                            Arc::new(RwLock::new(Session::new(stream))),
-                            data,
-                        ));
+                        let session = Arc::new(RwLock::new(Session::new(stream)));
+                        task::spawn(Self::health_check(session.clone(), data.clone()));
+                        task::spawn(Self::handle_connection(session.clone(), data));
                     }
                 }
             })
@@ -81,6 +81,34 @@ impl Server {
         tracing::info!("Connection from {} closed", addr);
         if let Err(e) = session.write().await.shutdown() {
             tracing::error!("Failed to close connection from {}: {}", addr, e);
+        }
+
+        println!("{:#?}", appdata.read().await);
+    }
+
+    async fn health_check(session: Arc<RwLock<Session>>, appdata: Arc<RwLock<AppData>>) {
+        loop {
+            task::sleep(HEALTH_CHECK_INTERVAL).await;
+
+            if session.read().await.closed() {
+                break;
+            }
+
+            if !session.write().await.health_check().await {
+                tracing::error!(
+                    "Health check failed for {}",
+                    session.read().await.peer_addr().unwrap()
+                );
+
+                handle_message(
+                    session.clone(),
+                    appdata.clone(),
+                    &Message::DISCONNECT_MESSAGE,
+                )
+                .await;
+
+                break;
+            }
         }
     }
 }

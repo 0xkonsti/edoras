@@ -9,6 +9,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 pub(crate) const CONNECTION_LIMIT: usize = 8;
+pub(crate) const HEALTH_CHECK_INTERVAL: std::time::Duration = std::time::Duration::from_secs(5);
 
 const TRACING_LEVEL: tracing::Level = tracing::Level::DEBUG;
 

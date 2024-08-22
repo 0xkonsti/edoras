@@ -1,6 +1,6 @@
 use anyhow::Result as AnyResult;
 use async_std::net::TcpStream;
-use edoras_core::{MessageBuilder, MessageType, HOST, PORT};
+use edoras_core::{Message, MessageBuilder, MessageType, HOST, PORT};
 
 const TRACING_LEVEL: tracing::Level = tracing::Level::DEBUG;
 
@@ -58,9 +58,7 @@ impl App {
             .send(self.data.stream_mut().unwrap())
             .await?;
 
-        MessageBuilder::new()
-            .with_type(MessageType::Disconnect)
-            .build()
+        Message::DISCONNECT_MESSAGE
             .send(self.data.stream_mut().unwrap())
             .await?;
 

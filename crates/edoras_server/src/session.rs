@@ -1,5 +1,5 @@
 use async_std::net::TcpStream;
-use edoras_core::{Message, MessageError};
+use edoras_core::{Message, MessageBuilder, MessageError, MessageType};
 use uuid::Uuid;
 
 #[derive(Debug)]
@@ -58,7 +58,6 @@ impl Session {
     }
 
     pub async fn recieved_msg(&mut self) -> bool {
-        tracing::debug!("Checking for message");
         Message::peek_for_header(&mut self.stream).await
     }
 
@@ -68,5 +67,11 @@ impl Session {
 
     pub async fn recv(&mut self) -> Result<Message, MessageError> {
         Message::recv(&mut self.stream).await
+    }
+
+    pub async fn health_check(&mut self) -> bool {
+        self.send(MessageBuilder::new().with_type(MessageType::Ping).build())
+            .await
+            .is_ok()
     }
 }

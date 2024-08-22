@@ -14,8 +14,9 @@ pub const HEADER: [u8; HEADER_SIZE] = [0x1, 0x3c, 0x21, 0x3e];
 const EMPTY: MessageTypeCode = 0x00;
 const PING: MessageTypeCode = 0x3c; // >
 const PONG: MessageTypeCode = 0x3e; // <
+const CHECK: MessageTypeCode = 0x3f; // ?
 const OKAY: MessageTypeCode = 0x6; // ACK
-const ERROR: MessageTypeCode = 0x3f; // ?
+const ERROR: MessageTypeCode = 0x18; // CAN
 const DISCONNECT: MessageTypeCode = 0x1b; // ESC
 
 const LOGIN: MessageTypeCode = 0x2a; // *
@@ -27,6 +28,7 @@ pub enum MessageType {
     Empty,
     Ping,
     Pong,
+    Check,
     Okay,
     Error,
     Disconnect,
@@ -68,6 +70,7 @@ impl MessageType {
             EMPTY => Self::Empty,
             PING => Self::Ping,
             PONG => Self::Pong,
+            CHECK => Self::Check,
             OKAY => Self::Okay,
             ERROR => Self::Error,
             DISCONNECT => Self::Disconnect,
@@ -82,6 +85,7 @@ impl MessageType {
             Self::Empty => EMPTY,
             Self::Ping => PING,
             Self::Pong => PONG,
+            Self::Check => CHECK,
             Self::Okay => OKAY,
             Self::Error => ERROR,
             Self::Disconnect => DISCONNECT,
@@ -126,6 +130,14 @@ impl Default for MessageBody {
 }
 
 impl Message {
+    pub const DISCONNECT_MESSAGE: Message = Message {
+        mtype: MessageType::Disconnect,
+        body: MessageBody {
+            count: 0,
+            fields: vec![],
+        },
+    };
+
     pub fn mtype(&self) -> MessageType {
         self.mtype
     }
