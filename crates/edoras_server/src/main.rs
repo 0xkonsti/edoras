@@ -1,5 +1,6 @@
 mod application;
 mod server;
+mod session;
 
 #[async_std::main]
 async fn main() {
