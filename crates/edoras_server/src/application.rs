@@ -14,8 +14,8 @@ const TRACING_LEVEL: tracing::Level = tracing::Level::DEBUG;
 
 #[derive(Debug)]
 pub(crate) struct AppData {
-    users: HashMap<String, User>,     // username -> User
-    sessions: HashMap<Uuid, Session>, // session_id -> Session
+    users: HashMap<String, User>,                  // username -> User
+    sessions: HashMap<Uuid, Arc<RwLock<Session>>>, // session_id -> Session
 }
 
 pub(crate) struct App {
@@ -47,19 +47,23 @@ impl AppData {
         self.users.remove(username)
     }
 
-    pub fn get_session(&self, session_id: &Uuid) -> Option<&Session> {
-        self.sessions.get(session_id)
+    pub fn get_session(&self, session_id: &Uuid) -> Option<Arc<RwLock<Session>>> {
+        self.sessions.get(session_id).cloned()
     }
 
-    pub fn get_session_mut(&mut self, session_id: &Uuid) -> Option<&mut Session> {
+    pub fn get_session_mut(&mut self, session_id: &Uuid) -> Option<&mut Arc<RwLock<Session>>> {
         self.sessions.get_mut(session_id)
     }
 
-    pub fn insert_session(&mut self, session_id: Uuid, session: Session) -> Option<Session> {
+    pub fn insert_session(
+        &mut self,
+        session_id: Uuid,
+        session: Arc<RwLock<Session>>,
+    ) -> Option<Arc<RwLock<Session>>> {
         self.sessions.insert(session_id, session)
     }
 
-    pub fn remove_session(&mut self, session_id: &Uuid) -> Option<Session> {
+    pub fn remove_session(&mut self, session_id: &Uuid) -> Option<Arc<RwLock<Session>>> {
         self.sessions.remove(session_id)
     }
 

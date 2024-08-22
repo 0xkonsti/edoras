@@ -7,26 +7,31 @@ use edoras_core::{Message, MessageBuilder, MessageType};
 use std::sync::Arc;
 
 pub async fn handle_message(
-    session: &mut Session,
+    session: Arc<RwLock<Session>>,
     appdata: Arc<RwLock<AppData>>,
     message: &Message,
 ) {
     match message.mtype() {
         MessageType::Ping => {
             session
+                .write()
+                .await
                 .send(MessageBuilder::new().with_type(MessageType::Pong).build())
                 .await
                 .unwrap();
         }
         MessageType::Disconnect => {
-            appdata.write().await.remove_session(&session.id());
             appdata
                 .write()
                 .await
-                .get_user_mut(session.user().as_ref().unwrap())
+                .remove_session(&session.read().await.id());
+            appdata
+                .write()
+                .await
+                .get_user_mut(session.read().await.user().as_ref().unwrap())
                 .unwrap()
                 .clear_session();
-            session.close();
+            session.write().await.close();
         }
         MessageType::Login => {
             auth::handle_login(session, appdata, message).await;

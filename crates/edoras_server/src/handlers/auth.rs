@@ -9,11 +9,11 @@ use std::sync::Arc;
 // TODO: Error handling
 
 pub(crate) async fn handle_register(
-    session: &mut Session,
+    session: Arc<RwLock<Session>>,
     appdata: Arc<RwLock<AppData>>,
     message: &Message,
 ) {
-    if session.user().is_some() {
+    if session.read().await.user().is_some() {
         return;
     }
 
@@ -34,8 +34,8 @@ pub(crate) async fn handle_register(
     }
 
     let mut user = User::new(username.to_string());
-    user.set_session(session.id());
-    session.set_user(username.to_string());
+    user.set_session(session.read().await.id());
+    session.write().await.set_user(username.to_string());
     appdata
         .write()
         .await
@@ -43,11 +43,11 @@ pub(crate) async fn handle_register(
 }
 
 pub(crate) async fn handle_login(
-    session: &mut Session,
+    session: Arc<RwLock<Session>>,
     appdata: Arc<RwLock<AppData>>,
     message: &Message,
 ) {
-    if session.user().is_some() {
+    if session.read().await.user().is_some() {
         return;
     }
 
@@ -65,11 +65,11 @@ pub(crate) async fn handle_login(
         return;
     }
 
-    session.set_user(username.to_string());
+    session.write().await.set_user(username.to_string());
     appdata
         .write()
         .await
         .get_user_mut(username)
         .unwrap()
-        .set_session(session.id());
+        .set_session(session.read().await.id());
 }

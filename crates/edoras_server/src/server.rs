@@ -32,7 +32,10 @@ impl Server {
                 let data = Arc::clone(&appdata);
                 async move {
                     if let Ok(stream) = stream {
-                        task::spawn(Self::handle_connection(Session::new(stream), data));
+                        task::spawn(Self::handle_connection(
+                            Arc::new(RwLock::new(Session::new(stream))),
+                            data,
+                        ));
                     }
                 }
             })
@@ -41,40 +44,43 @@ impl Server {
         Ok(())
     }
 
-    async fn handle_connection(mut session: Session, appdata: Arc<RwLock<AppData>>) {
-        match session.peer_addr() {
-            Ok(addr) => {
-                tracing::info!("New connection from {}", addr);
-                // TODO: Session needs to be stored in the appdata (likley needs to be changed to Arc<RwLock<Session>>)
-                // appdata.write().await.insert_session(session.id(), session);
+    async fn handle_connection(session: Arc<RwLock<Session>>, appdata: Arc<RwLock<AppData>>) {
+        if let Err(e) = session.read().await.peer_addr() {
+            tracing::error!("Failed to get peer address: {}", e);
+            return;
+        }
 
-                while !session.closed() {
-                    // TODO: Check if the client is still connected > send ping to client on an interval
+        appdata
+            .write()
+            .await
+            .insert_session(session.read().await.id(), session.clone());
 
-                    if !session.recieved_msg().await {
-                        continue;
-                    }
+        let addr = session.read().await.peer_addr().unwrap().clone();
+        tracing::info!("New connection from {}", addr);
 
-                    match session.recv().await {
-                        Ok(msg) => handle_message(&mut session, appdata.clone(), &msg).await,
-                        Err(e) => {
-                            tracing::error!("Failed to receive message from {}: {}", addr, e);
-                            session.close();
-                            break;
-                        }
-                    }
-
-                    println!("{:?}", appdata.read().await);
-                }
-
-                tracing::info!("Connection closed by {}", addr);
-                if let Err(e) = session.shutdown() {
-                    tracing::error!("Failed to shutdown connection for {}: {}", addr, e);
-                }
+        while !session.read().await.closed() {
+            // TODO: Check if the client is still connected > send ping to client on an interval
+            if !session.write().await.recieved_msg().await {
+                continue;
             }
-            Err(e) => {
-                tracing::error!("Failed to get peer address: {}", e);
-            }
+
+            let msg = match session.write().await.recv().await {
+                Ok(msg) => msg,
+                Err(e) => {
+                    tracing::error!("Failed to receive message from {}: {}", addr, e);
+                    session.write().await.close();
+                    break;
+                }
+            };
+
+            handle_message(session.clone(), appdata.clone(), &msg).await;
+
+            println!("{:#?}", appdata.read().await);
+        }
+
+        tracing::info!("Connection from {} closed", addr);
+        if let Err(e) = session.write().await.shutdown() {
+            tracing::error!("Failed to close connection from {}: {}", addr, e);
         }
     }
 }
