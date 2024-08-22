@@ -6,3 +6,11 @@ edition = "2021"
 [lib]
 name = "edoras_core"
 path = "src/lib.rs"
+
+[dependencies]
+futures.workspace = true
+tracing = "0.1.*"
+
+[dependencies.async-std]
+workspace = true
+

@@ -1,4 +1,5 @@
 use async_std::net::TcpStream;
+use edoras_core::{Message, MessageError};
 
 pub(crate) struct Session {
     stream: TcpStream,
@@ -31,6 +32,14 @@ impl Session {
     }
 
     pub async fn recieved_msg(&mut self) -> bool {
-        unimplemented!()
+        Message::peek_for_header(&mut self.stream).await
+    }
+
+    pub async fn send(&mut self, message: Message) -> Result<(), MessageError> {
+        message.send(&mut self.stream).await
+    }
+
+    pub async fn recv(&mut self) -> Result<Message, MessageError> {
+        Message::recv(&mut self.stream).await
     }
 }

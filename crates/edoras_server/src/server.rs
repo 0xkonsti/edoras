@@ -1,4 +1,5 @@
 use crate::application::CONNECTION_LIMIT;
+use crate::handlers::handle_message;
 use crate::session::Session;
 use anyhow::Result as AnyResult;
 use async_std::net::TcpListener;
@@ -12,7 +13,10 @@ pub(crate) struct Server {
 
 impl Server {
     pub fn new(host: &'static str, port: u16) -> Self {
-        Self { host, port }
+        Self {
+            host,
+            port,
+        }
     }
 
     pub async fn serve(&self) -> AnyResult<()> {
@@ -42,6 +46,16 @@ impl Server {
                         continue;
                     }
 
+                    // TODO: Check if the client is still connected > send ping to client on an interval
+
+                    match session.recv().await {
+                        Ok(msg) => handle_message(&mut session, &msg).await,
+                        Err(e) => {
+                            tracing::error!("Failed to receive message from {}: {}", addr, e);
+                            session.close();
+                            break;
+                        }
+                    }
                     todo!("read and process message");
                 }
 

@@ -1,4 +1,5 @@
 mod application;
+mod handlers;
 mod server;
 mod session;
 
