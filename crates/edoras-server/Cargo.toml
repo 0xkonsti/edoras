@@ -1,0 +1,20 @@
+[package]
+name = "edoras-server"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[dependencies]
+# anyhow.workspace = true
+# futures.workspace = true
+# tracing.workspace = true
+# tarcing-subscriber.workspace = true
+
+[dependencies.async-std]
+workspace = true
+
+[dependencies.chat_core]
+workspace = true
