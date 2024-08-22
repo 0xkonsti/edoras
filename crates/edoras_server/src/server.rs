@@ -32,7 +32,6 @@ impl Server {
         Ok(())
     }
 
-    // TODO: instead of passing the stream, pass a session object > needs yet to be implemented
     async fn handle_connection(mut session: Session) {
         match session.peer_addr() {
             Ok(addr) => {
