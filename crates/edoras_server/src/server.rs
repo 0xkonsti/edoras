@@ -42,11 +42,11 @@ impl Server {
                 tracing::info!("New connection from {}", addr);
 
                 while !session.closed() {
+                    // TODO: Check if the client is still connected > send ping to client on an interval
+
                     if !session.recieved_msg().await {
                         continue;
                     }
-
-                    // TODO: Check if the client is still connected > send ping to client on an interval
 
                     match session.recv().await {
                         Ok(msg) => handle_message(&mut session, &msg).await,
@@ -56,7 +56,6 @@ impl Server {
                             break;
                         }
                     }
-                    todo!("read and process message");
                 }
 
                 tracing::info!("Connection closed by {}", addr);

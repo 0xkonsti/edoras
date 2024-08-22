@@ -156,6 +156,8 @@ impl Message {
             buf.extend_from_slice(&field.data);
         }
 
+        tracing::debug!("Sending message | {:x?}", buf);
+
         match stream.write_all(&buf).await {
             Ok(_) => Ok(()),
             Err(err) => Err(MessageError::WriteError(err)),
@@ -186,7 +188,10 @@ impl Message {
 
         let mut builder = MessageBuilder::new().with_type(MessageType::from_code(mtype));
 
-        tracing::debug!("Message type is valid | {:x}", mtype);
+        tracing::debug!(
+            "Message type is valid | {:?}",
+            MessageType::from_code(mtype)
+        );
 
         let mut buf = [0u8; BASE_LENGTH_SIZE];
         if let Err(e) = stream.read_exact(&mut buf).await {
