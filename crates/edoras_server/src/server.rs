@@ -11,7 +11,10 @@ pub(crate) struct Server {
 
 impl Server {
     pub fn new(host: &'static str, port: u16) -> Self {
-        Self { host, port }
+        Self {
+            host,
+            port,
+        }
     }
 
     pub async fn serve(&self) -> AnyResult<()> {
@@ -23,9 +26,7 @@ impl Server {
             .incoming()
             .for_each_concurrent(Some(CONNECTION_LIMIT), |stream| async move {
                 if let Ok(stream) = stream {
-                    tracing::info!("Accepted connection from {}", stream.peer_addr()?);
-
-                    task::spawn(Self::handle_connection(Self, stream));
+                    task::spawn(Self::handle_connection(stream));
                 }
             })
             .await;
@@ -34,7 +35,7 @@ impl Server {
     }
 
     // TODO: instead of passing the stream, pass a session object > needs yet to be implemented
-    async fn handle_connection(&self, stream: async_std::net::TcpStream) -> AnyResult<()> {
+    async fn handle_connection(stream: async_std::net::TcpStream) -> AnyResult<()> {
         Ok(())
     }
 }

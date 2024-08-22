@@ -8,13 +8,13 @@ name = "server"
 path = "src/main.rs"
 
 [dependencies]
-# anyhow.workspace = true
-# futures.workspace = true
-# tracing.workspace = true
-# tarcing-subscriber.workspace = true
+anyhow.workspace = true
+futures.workspace = true
+tracing = "0.1.*"
+tracing-subscriber = "0.3.*"
 
 [dependencies.async-std]
 workspace = true
 
-[dependencies.chat_core]
+[dependencies.edoras_core]
 workspace = true

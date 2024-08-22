@@ -1,7 +1,8 @@
 mod application;
 mod server;
 
-fn main() {
+#[async_std::main]
+async fn main() {
     let app = application::App::new();
 
     if let Err(e) = app.run().await {

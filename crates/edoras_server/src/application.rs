@@ -1,5 +1,6 @@
+use crate::server;
 use anyhow::Result as AnyResult;
-use chat_core::{HOST, PORT};
+use edoras_core::{HOST, PORT};
 
 pub(crate) const CONNECTION_LIMIT: usize = 8;
 

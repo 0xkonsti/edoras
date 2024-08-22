@@ -1,10 +1,8 @@
 [package]
-name = "edoras-core"
+name = "edoras_core"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
 name = "edoras_core"
 path = "src/lib.rs"
-
-[dependencies]
