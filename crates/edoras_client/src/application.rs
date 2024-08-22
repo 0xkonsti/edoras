@@ -1,6 +1,6 @@
 use anyhow::Result as AnyResult;
 use async_std::net::TcpStream;
-use edoras_core::{HOST, PORT};
+use edoras_core::{MessageBuilder, MessageType, HOST, PORT};
 
 const TRACING_LEVEL: tracing::Level = tracing::Level::DEBUG;
 
@@ -14,7 +14,9 @@ pub(crate) struct App {
 
 impl AppData {
     pub fn new() -> Self {
-        Self { stream: None }
+        Self {
+            stream: None,
+        }
     }
 
     pub fn stream(&self) -> Option<&TcpStream> {
@@ -48,6 +50,12 @@ impl App {
         self.data
             .set_stream(TcpStream::connect((HOST, PORT)).await?);
         tracing::debug!("Application started");
+
+        MessageBuilder::new()
+            .with_type(MessageType::Disconnect)
+            .build()
+            .send(self.data.stream_mut().unwrap())
+            .await?;
 
         Ok(())
     }
