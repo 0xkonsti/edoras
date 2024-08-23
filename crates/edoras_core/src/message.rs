@@ -22,7 +22,7 @@ const DISCONNECT: MessageTypeCode = 0x1b; // ESC
 const LOGIN: MessageTypeCode = 0x2a; // *
 const REGISTER: MessageTypeCode = 0x2b; // +
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MessageType {
     // General
     Empty,
